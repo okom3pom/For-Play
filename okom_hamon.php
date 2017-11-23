@@ -5,7 +5,7 @@
 *	Envois les conditions de vente par mail lors de la finalisation d'une commande.
 *  
 *	Author Okom3pom - http://okom3pom.com
-*	Version 1.9 - 18/06/2015
+*	Version 1.9 - 18/06/2017
 * 
 */
 if (!defined('_CAN_LOAD_FILES_'))

@@ -1,4 +1,13 @@
 <?php
+/*
+*  
+* 	Module OKOM_HAMON
+*	Envois les conditions de vente par mail lors de la finalisation d'une commande.
+*  
+*	Author Okom3pom - http://okom3pom.com
+*	Version 1.9 - 18/06/2017
+* 
+*/
 
 include_once(dirname(__FILE__).'/../../okom_hamon.php');
 
