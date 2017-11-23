@@ -1,0 +1,17 @@
+[{shop_url}] 
+
+Votre demande de rétractation pour {shop_name} a bien été envoyé.  
+
+COMMANDE # : {order_name}
+
+VOTRE MESSAGE : {message}
+
+Quand votre demande de rétractation sera validée par nos services, vous devez imprimer le bon de retour produit diponible dans votre compte et le joindre à votre colis.
+
+Nous vous rappelons que le article ou les articles retourné(s) doivent être neufs, avec leur(s) étiquette(s) et dans leur emballage d'origine.
+
+Vous ne devez pas utiliser les boites des articles comme colis ( Exemple : Chaussures, bottes .... )
+
+
+Cordialement {shop_name} [{shop_url}]
+

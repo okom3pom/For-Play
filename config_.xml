@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>okom_hamon</name>
+	<displayName><![CDATA[Lois Hamon]]></displayName>
+	<version><![CDATA[1.9]]></version>
+	<description><![CDATA[Envoyer les conditions de ventes apr&egrave;s la finalisation de la commande.]]></description>
+	<author><![CDATA[Okom3pom]]></author>
+	<tab><![CDATA[Tools]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries></limited_countries>
+</module>

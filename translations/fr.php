@@ -1,0 +1,36 @@
+<?php
+
+global $_MODULE;
+$_MODULE = array();
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_1b90769e9f8d0e4fdd6499645c317206'] = 'Lois Hamon';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_1a72ceed078aa23362f96e56ad60bb73'] = 'Envoyer les conditions de ventes après la finalisation de la commande.';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_2818290adeb30440591a0f4dace511a8'] = 'Oups, configuration mise à jour mais pas de CMS pour le pdf';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_c888438d14855d7d96a2724ee9c306bd'] = 'Settings updated';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_f4f70727dc34561dfde1a3c529b6205c'] = 'Settings';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_f1e4f9c3e99d41f951a84199be6e073f'] = 'Nom du fichier pdf à générer';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_5b1f8ba7bf335160e5683ca232d1ee4f'] = 'Nom du fichier pdf.';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_37658fc8c41719e77b8341e2628c71e5'] = 'Id du CMS de vos conditions generales de ventes ';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_fe55f919d961cfbc46a795b3c7da0f18'] = 'Le plus souvent 3';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_8c3fea9ad9414e35f343082ab12e5a81'] = 'Email à qui sera envoyé le formulaire';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_c9cc8cce247e49bae79f15173ce97354'] = 'Enregistrer';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_f0b0cd93633d86628f2b9fffd3dde95b'] = 'Ci-joint les conditions de ventes.';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_cb09e0abf66ec4e9ff4449179f60b0a9'] = 'Demande de retour à validé pour : ';
+$_MODULE['<{okom_hamon}prestashop>okom_hamon_c8ad98a8e4b6af29d3a82944dd3543d7'] = 'Help me improve my free modules';
+$_MODULE['<{okom_hamon}prestashop>default_2f0b19ce0e3b8f6e78b3c329edb85667'] = 'Merci de choisir une commande';
+$_MODULE['<{okom_hamon}prestashop>default_1210003d1a4b1a88f31ddf8bd0858b49'] = 'Vous avez déjà fait une demande pour';
+$_MODULE['<{okom_hamon}prestashop>default_11d900525d50f9033ab5f5cda46b4cd4'] = 'ce retour';
+$_MODULE['<{okom_hamon}prestashop>default_05cd3e50d91345a1707d8f8ed559fda6'] = 'Numéro de commande invalide';
+$_MODULE['<{okom_hamon}prestashop>default_99f378324d1c6787d7c42fc02c32a4f2'] = 'Le motif de votre retour n\'est pas valide ';
+$_MODULE['<{okom_hamon}prestashop>default_11659ccf7b1d5d85eba97f7fcc361bca'] = 'Merci de sélectionner et saisir la quantité que vous souhaitez retourner.';
+$_MODULE['<{okom_hamon}prestashop>default_6df29135ceb9770289122587384fe3ff'] = 'Cette commande n\'est pas retournable merci de contacter le service client.';
+$_MODULE['<{okom_hamon}prestashop>default_36e28dbd9d44750e36ae5c9451a14e37'] = 'Les quantitées retournées ne sont pas bonnes. Avez vous déjà fait une demande de retour pour ce produi';
+$_MODULE['<{okom_hamon}prestashop>default_cdbd4d8f853cc5be3aaf4ba395241e6c'] = 'Failed to send email';
+$_MODULE['<{okom_hamon}prestashop>default_227b247ce5625e6baefae748263ddd6c'] = 'ormulaire de rétractation bien envoyé. Vous pouvez suivre votre retour dans votre compte.';
+$_MODULE['<{okom_hamon}prestashop>retractation_18edf7bcd1324260866e57c7dc4016ac'] = 'Formulaire de rétractation';
+$_MODULE['<{okom_hamon}prestashop>retractation_c360639f51cb2625a9439974e865a683'] = 'Patientez';
+$_MODULE['<{okom_hamon}prestashop>retractation_87efcd44b7972a33b064dbcba8860461'] = 'Commande';
+$_MODULE['<{okom_hamon}prestashop>retractation_5304640e769ffaadb7217b43b4924efa'] = 'Choisir une commande';
+$_MODULE['<{okom_hamon}prestashop>retractation_1a2b13822eb8b90bb89b468d7f46ea6b'] = 'Merci de nous aider à améliorer notre service en nous en disant plus sur votre retour.';
+$_MODULE['<{okom_hamon}prestashop>retractation_94966d90747b97d1f0f206c98a8b1ac3'] = 'Envoyer';
+$_MODULE['<{okom_hamon}prestashop>my-account_18edf7bcd1324260866e57c7dc4016ac'] = 'Formulaire de rétractation';
+$_MODULE['<{okom_hamon}prestashop>my-account_ca38272007bbdfb6ca7703140a256617'] = 'Retractation';

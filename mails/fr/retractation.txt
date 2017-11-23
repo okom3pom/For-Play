@@ -1,0 +1,15 @@
+
+[{shop_url}] 
+
+Formulaire de rétractation d'un client de {shop_name} 
+
+ADRESSE E-MAIL DU CLIENT : {email}
+
+MESSAGE DU CLIENT : {message}
+
+COMMANDE # : {order_name}
+
+
+
+{shop_name} [{shop_url}]
+

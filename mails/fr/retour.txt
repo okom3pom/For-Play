@@ -1,0 +1,6 @@
+[{shop_url}] 
+
+Demande de retour à valider sur  {shop_name} 
+
+{shop_name} [{shop_url}]
+
