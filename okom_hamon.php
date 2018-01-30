@@ -1,291 +1,289 @@
 <?php
-/*
-*  
-* 	Module OKOM_HAMON
-*	Envois les conditions de vente par mail lors de la finalisation d'une commande.
-*	Gère les retours clients
-*  
-*	Author Okom3pom - http://okom3pom.com
-*	Version 1.9 - 18/06/2017
-* 
-*/
-if (!defined('_CAN_LOAD_FILES_'))
-	exit;
+/**
+ * Okom3pom
+ *
+ * NOTICE OF LICENSE
+ *
+ * Module Hamon for Prestashop 1.6.x.x
+ *
+ * @author    SARL Rouage communication <contact@okom3pom.com>
+ * @copyright 2008-2018 Rouage Communication SARL
+ * @version   1.9.0
+ * @license   Free
+ */
+if (!defined('_CAN_LOAD_FILES_')) {
+    exit;
+}
 
 class okom_Hamon extends Module
 {
-	protected $_html;
-	
-	public function __construct()
-	{
-		$this->name = 'okom_hamon';
-		$this->tab = 'Tools';
-		$this->version = 1.9;
-		$this->author = 'Okom3pom';
-	
-		if(version_compare(_PS_VERSION_, '1.6.0.0', '>='))
-		$this->bootstrap = true;		
-		
-		parent::__construct();
+    protected $_html;
+    
+    public function __construct()
+    {
+        $this->name = 'okom_hamon';
+        $this->tab = 'Tools';
+        $this->version = 1.9;
+        $this->author = 'Okom3pom';
+    
+        if (version_compare(_PS_VERSION_, '1.6.0.0', '>=')) {
+            $this->bootstrap = true;
+        }
+        
+        parent::__construct();
 
-		$this->displayName = $this->l('Lois Hamon');
-		$this->description = $this->l('Envoyer les conditions de ventes après la finalisation de la commande.');		
-	}
+        $this->displayName = $this->l('Lois Hamon');
+        $this->description = $this->l('Envoyer les conditions de ventes après la finalisation de la commande.');
+    }
 
-	public function install()
-	{
-		if (Shop::isFeatureActive())
-			Shop::setContext(Shop::CONTEXT_ALL);
+    public function install()
+    {
+        if (Shop::isFeatureActive()) {
+            Shop::setContext(Shop::CONTEXT_ALL);
+        }
 
-		return parent::install()
-		&& $this->registerHook('customerAccount')
-		&& $this->registerHook('actionValidateOrder')
-		&& $this->registerHook('actionObjectCmsUpdateAfter')
-		&& $this->registerHook('actionObjectOrderReturnAddAfter')
-		&& Configuration::updateValue('OKOM_HAMON_MODE','conditions.pdf')
-		&& Configuration::updateValue('OKOM_HAMON_URL',3)
-		&& Configuration::updateValue('OKOM_HAMON_EMAIL',Configuration::get('PS_SHOP_EMAIL'));	
-	}
-	
-	public function uninstall()
-	{
+        return parent::install()
+        && $this->registerHook('customerAccount')
+        && $this->registerHook('actionValidateOrder')
+        && $this->registerHook('actionObjectCmsUpdateAfter')
+        && $this->registerHook('actionObjectOrderReturnAddAfter')
+        && Configuration::updateValue('OKOM_HAMON_MODE', 'conditions.pdf')
+        && Configuration::updateValue('OKOM_HAMON_URL', 3)
+        && Configuration::updateValue('OKOM_HAMON_EMAIL', Configuration::get('PS_SHOP_EMAIL'));
+    }
+    
+    public function uninstall()
+    {
 
-		Configuration::deleteByName('OKOM_HAMON_MODE');
-		Configuration::deleteByName('OKOM_HAMON_URL');
-		Configuration::deleteByName('OKOM_HAMON_EMAIL');
-	
-		return parent::uninstall();
-	
-	}
+        Configuration::deleteByName('OKOM_HAMON_MODE');
+        Configuration::deleteByName('OKOM_HAMON_URL');
+        Configuration::deleteByName('OKOM_HAMON_EMAIL');
+    
+        return parent::uninstall();
+    }
 
-	public function getContent()
-	{
-		
-		$shop = new Shop(Shop::getContextShopID());
-		if (empty($shop->id))
-				$shop = new Shop(Configuration::get('PS_SHOP_DEFAULT'));
-			
-		$output = null;
-		
-		
-		if (Tools::isSubmit('submit'.$this->name))
-		{
-			
-			require_once(dirname(__FILE__).'/../../tools/tcpdf/tcpdf.php');								
+    public function getContent()
+    {
+        
+        $shop = new Shop(Shop::getContextShopID());
+        if (empty($shop->id)) {
+                $shop = new Shop(Configuration::get('PS_SHOP_DEFAULT'));
+        }
+            
+        $output = null;
+        
+        
+        if (Tools::isSubmit('submit'.$this->name)) {
+            require_once(dirname(__FILE__).'/../../tools/tcpdf/tcpdf.php');
 
-			$OKOM_HAMON_MODE = strval(Tools::getValue('OKOM_HAMON_MODE'));			
-			$OKOM_HAMON_URL = (int)Tools::getValue('OKOM_HAMON_URL');
+            $OKOM_HAMON_MODE = strval(Tools::getValue('OKOM_HAMON_MODE'));
+            $OKOM_HAMON_URL = (int)Tools::getValue('OKOM_HAMON_URL');
 
-			if ( Validate::isEmail(Tools::getValue('OKOM_HAMON_EMAIL')) )
-					$OKOM_HAMON_EMAIL = strval(Tools::getValue('OKOM_HAMON_EMAIL'));
-			
-			if (!$output)
-			{				
-
-				Configuration::updateValue('OKOM_HAMON_MODE',$OKOM_HAMON_MODE);
-				Configuration::updateValue('OKOM_HAMON_URL',$OKOM_HAMON_URL);
-				Configuration::updateValue('OKOM_HAMON_EMAIL',$OKOM_HAMON_EMAIL);			
-			
-				$content = new CMS($OKOM_HAMON_URL, $this->context->language->id);
-			
-				if( Validate::isLoadedObject($content) )
-				{
-					$condition = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-					
-					
-					$condition->SetCreator(PDF_CREATOR);
-					$condition->SetAuthor(Configuration::get('PS_SHOP_NAME'));
-					$condition->setPrintHeader(false);
-					$condition->setPrintFooter(false);
-					$condition->SetFont('helvetica', '', 11, '', true);
-					$condition->AddPage();							
-					$condition->writeHTML($content->content , true, false, true, false, '');
-					$condition->Output(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE'), 'F');	
-					
-				}
-				else
-				$this->_html .= $this->displayConfirmation($this->l('Oups, configuration mise à jour mais pas de CMS pour le pdf'));					
-			
-				$this->_html .= $this->displayConfirmation($this->l('Settings updated'));			
-			
-			}
-		}
-		
-		
-		if( file_exists(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE')) )
-		 $link_condition = '<a href="'.$shop->getBaseURL().'modules/'.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE').'">Voir mes conditions en pdf</a>';
-		else
-		 $link_condition = 'Les conditions n\'existe pas vous devez enregistrer une fois le module.';
-			
-		
-		
-		return $this->hlp().$link_condition.$this->_html.$output.$this->renderForm();
-	}
+            if (Validate::isEmail(Tools::getValue('OKOM_HAMON_EMAIL'))) {
+                    $OKOM_HAMON_EMAIL = strval(Tools::getValue('OKOM_HAMON_EMAIL'));
+            }
+            
+            if (!$output) {
+                Configuration::updateValue('OKOM_HAMON_MODE', $OKOM_HAMON_MODE);
+                Configuration::updateValue('OKOM_HAMON_URL', $OKOM_HAMON_URL);
+                Configuration::updateValue('OKOM_HAMON_EMAIL', $OKOM_HAMON_EMAIL);
+            
+                $content = new CMS($OKOM_HAMON_URL, $this->context->language->id);
+            
+                if (Validate::isLoadedObject($content)) {
+                    $condition = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+                    
+                    
+                    $condition->SetCreator(PDF_CREATOR);
+                    $condition->SetAuthor(Configuration::get('PS_SHOP_NAME'));
+                    $condition->setPrintHeader(false);
+                    $condition->setPrintFooter(false);
+                    $condition->SetFont('helvetica', '', 11, '', true);
+                    $condition->AddPage();
+                    $condition->writeHTML($content->content, true, false, true, false, '');
+                    $condition->Output(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE'), 'F');
+                } else {
+                    $this->_html .= $this->displayConfirmation($this->l('Oups, configuration mise à jour mais pas de CMS pour le pdf'));
+                }
+            
+                $this->_html .= $this->displayConfirmation($this->l('Settings updated'));
+            }
+        }
+        
+        
+        if (file_exists(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE'))) {
+            $link_condition = '<a href="'.$shop->getBaseURL().'modules/'.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE').'">Voir mes conditions en pdf</a>';
+        } else {
+            $link_condition = 'Les conditions n\'existe pas vous devez enregistrer une fois le module.';
+        }
+            
+        
+        
+        return $this->hlp().$link_condition.$this->_html.$output.$this->renderForm();
+    }
 
 
-	public function renderForm()
-	{		
-		$icon = 'icon-cogs';
-		$type = 'icon'; 
-		$date_type = 'datetime';
-		$class = '';
-		$radio = 'switch';
+    public function renderForm()
+    {
+        $icon = 'icon-cogs';
+        $type = 'icon';
+        $date_type = 'datetime';
+        $class = '';
+        $radio = 'switch';
 
-		if(version_compare(_PS_VERSION_, '1.6.0.0', '<'))
-		{
-			$icon = _PS_ADMIN_IMG_ .'cog.gif';
-			$type = 'image'; 
-			$date_type = 'text';
-			$class = 't';
-			$radio = 'radio';
-		}				
+        if (version_compare(_PS_VERSION_, '1.6.0.0', '<')) {
+            $icon = _PS_ADMIN_IMG_ .'cog.gif';
+            $type = 'image';
+            $date_type = 'text';
+            $class = 't';
+            $radio = 'radio';
+        }
 
-			$fields_form[0]['form'] = array(
-			'legend' => array(
-				'title' => $this->l('Settings'),
-				'$type' => $icon
-			),			
-			
-			'input' => array(
-			
-				array(
-					'name' => 'OKOM_HAMON_MODE',
-					'type' => 'text',
-					'label' => $this->l('Nom du fichier pdf à générer'),
-					'desc' => $this->l('Nom du fichier pdf.'),
-					'required' => true
-					
-				),
-				array(
-					'name' => 'OKOM_HAMON_URL',
-					'type' => 'text',
-					'label' => $this->l('Id du CMS de vos conditions generales de ventes '),
-					'desc' => $this->l('Le plus souvent 3'),
-					'required' => true
-					
-				),
-				array(
-					'name' => 'OKOM_HAMON_EMAIL',
-					'type' => 'text',
-					'label' => $this->l('Email à qui sera envoyé le formulaire'),
-					'desc' => $this->l(''),
-					'required' => true					
-				)						
-				
-			),
-			'submit' => array(
-				'title' => $this->l('Save'),
-			)
-		);
-		
-		$languages = Language::getLanguages(false);
-		foreach ($languages as $k => $language)
-			$languages[$k]['is_default'] = (int)$language['id_lang'] == Configuration::get('PS_LANG_DEFAULT');
-		
+            $fields_form[0]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Settings'),
+                '$type' => $icon
+            ),
+            
+            'input' => array(
+            
+                array(
+                    'name' => 'OKOM_HAMON_MODE',
+                    'type' => 'text',
+                    'label' => $this->l('Nom du fichier pdf à générer'),
+                    'desc' => $this->l('Nom du fichier pdf.'),
+                    'required' => true
+                    
+                ),
+                array(
+                    'name' => 'OKOM_HAMON_URL',
+                    'type' => 'text',
+                    'label' => $this->l('Id du CMS de vos conditions generales de ventes '),
+                    'desc' => $this->l('Le plus souvent 3'),
+                    'required' => true
+                    
+                ),
+                array(
+                    'name' => 'OKOM_HAMON_EMAIL',
+                    'type' => 'text',
+                    'label' => $this->l('Email à qui sera envoyé le formulaire'),
+                    'desc' => $this->l(''),
+                    'required' => true
+                )
+                
+            ),
+            'submit' => array(
+                'title' => $this->l('Save'),
+            )
+        );
+        
+        $languages = Language::getLanguages(false);
+        foreach ($languages as $k => $language) {
+            $languages[$k]['is_default'] = (int)$language['id_lang'] == Configuration::get('PS_LANG_DEFAULT');
+        }
+        
 
-		$helper = new HelperForm();
-		$helper->module = $this;
-		$helper->name_controller = $this->name;
-		$helper->token = Tools::getAdminTokenLite('AdminModules');
-		$helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
-		$helper->languages = $languages;
-		$helper->default_form_language = (int)Configuration::get('PS_LANG_DEFAULT');
-		$helper->allow_employee_form_lang = true;
-		$helper->title = $this->displayName;
-		$helper->submit_action = 'submit'.$this->name;		
-		$helper->tpl_vars = array(
-			'uri' => $this->getPathUri(),
-			'fields_value' => $this->getConfigFieldsValues(),
-			'languages' => $this->context->controller->getLanguages(),
-			'id_language' => $this->context->language->id
-			);
+        $helper = new HelperForm();
+        $helper->module = $this;
+        $helper->name_controller = $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
+        $helper->languages = $languages;
+        $helper->default_form_language = (int)Configuration::get('PS_LANG_DEFAULT');
+        $helper->allow_employee_form_lang = true;
+        $helper->title = $this->displayName;
+        $helper->submit_action = 'submit'.$this->name;
+        $helper->tpl_vars = array(
+            'uri' => $this->getPathUri(),
+            'fields_value' => $this->getConfigFieldsValues(),
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id
+            );
 
-		return $helper->generateForm($fields_form);
-	}
-	
-	protected function getConfigFieldsValues()
-	{		
-			return array(
-				'OKOM_HAMON_URL' => (int)Tools::getValue('OKOM_HAMON_URL', Configuration::get('OKOM_HAMON_URL')),
-				'OKOM_HAMON_EMAIL' => strval(Tools::getValue('OKOM_HAMON_EMAIL', Configuration::get('OKOM_HAMON_EMAIL'))),
-				'OKOM_HAMON_MODE' => strval(Tools::getValue('OKOM_HAMON_MODE', Configuration::get('OKOM_HAMON_MODE')))
-			);
-	}	
-	
-	
+        return $helper->generateForm($fields_form);
+    }
+    
+    protected function getConfigFieldsValues()
+    {
+            return array(
+                'OKOM_HAMON_URL' => (int)Tools::getValue('OKOM_HAMON_URL', Configuration::get('OKOM_HAMON_URL')),
+                'OKOM_HAMON_EMAIL' => strval(Tools::getValue('OKOM_HAMON_EMAIL', Configuration::get('OKOM_HAMON_EMAIL'))),
+                'OKOM_HAMON_MODE' => strval(Tools::getValue('OKOM_HAMON_MODE', Configuration::get('OKOM_HAMON_MODE')))
+            );
+    }
+    
+    
     public function hookactionValidateOrder($params)
-    {	
-	
-		if( file_exists(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE')) )
-		{
-			$content = file_get_contents(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE'));
-			$file_attachement['content'] = $content;
-			$file_attachement['name'] = Configuration::get('OKOM_HAMON_MODE');		
-			$file_attachement['mime'] = 'application/pdf';
-			
-			Mail::Send($this->context->language->id, 
-			'hamon', 
-			$this->l('Ci-joint les conditions de ventes.') ,
-			false,
-			$params['customer']->email,
-			$params['customer']->lastname,
-			strval(Configuration::get('OKOM_HAMON_EMAIL')), 
-			strval(Configuration::get('PS_SHOP_NAME')),
-			$file_attachement,
-			null,
-			_PS_MODULE_DIR_.$this->name.'/mails/', false,  null, null);
-		}
-		
-	
-	}
-	
-	public function hookactionObjectOrderReturnAddAfter( $params)
-	{	
-		
-		/*
-		Mail::Send( 
-		(int)Configuration::get('PS_LANG_DEFAULT'), 
-		'retour', 
-		$this->l('Demande de retour à validé pour : ').strval(Configuration::get('PS_SHOP_NAME')),
-		NULL, 
-		strval(Configuration::get('OKOM_HAMON_EMAIL')),
-		NULL, 
-		strval(Configuration::get('PS_SHOP_EMAIL')), 
-		strval(Configuration::get('PS_SHOP_NAME')),
-		false, 
-		NULL, 
-		_PS_MODULE_DIR_.$this->name.'/mails/');	
-		*/
-		
-	}
-	
-	public function hookactionObjectCmsUpdateAfter($params)
-	{
-		
-		require_once(dirname(__FILE__).'/../../tools/tcpdf/tcpdf.php');	
-		
-		if( $params['object']->id == Configuration::get('OKOM_HAMON_URL') && Validate::isLoadedObject($params['object']) )
-		{
-				$condition = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-				$condition->AddPage();							
-				$condition->writeHTML($params['object']->content[$this->context->language->id] , true, false, true, false, '');
-				$condition->Output(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE'), 'F');	
+    {
+    
+        if (file_exists(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE'))) {
+            $content = file_get_contents(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE'));
+            $file_attachement['content'] = $content;
+            $file_attachement['name'] = Configuration::get('OKOM_HAMON_MODE');
+            $file_attachement['mime'] = 'application/pdf';
+            
+            Mail::Send(
+                $this->context->language->id,
+                'hamon',
+                $this->l('Ci-joint les conditions de ventes.'),
+                false,
+                $params['customer']->email,
+                $params['customer']->lastname,
+                strval(Configuration::get('OKOM_HAMON_EMAIL')),
+                strval(Configuration::get('PS_SHOP_NAME')),
+                $file_attachement,
+                null,
+                _PS_MODULE_DIR_.$this->name.'/mails/',
+                false,
+                null,
+                null
+            );
+        }
+    }
+    
+    public function hookactionObjectOrderReturnAddAfter($params)
+    {
+        
+        /*
+        Mail::Send( 
+        (int)Configuration::get('PS_LANG_DEFAULT'), 
+        'retour', 
+        $this->l('Demande de retour à validé pour : ').strval(Configuration::get('PS_SHOP_NAME')),
+        NULL, 
+        strval(Configuration::get('OKOM_HAMON_EMAIL')),
+        NULL, 
+        strval(Configuration::get('PS_SHOP_EMAIL')), 
+        strval(Configuration::get('PS_SHOP_NAME')),
+        false, 
+        NULL, 
+        _PS_MODULE_DIR_.$this->name.'/mails/'); 
+        */
+    }
+    
+    public function hookactionObjectCmsUpdateAfter($params)
+    {
+        
+        require_once(dirname(__FILE__).'/../../tools/tcpdf/tcpdf.php');
+        
+        if ($params['object']->id == Configuration::get('OKOM_HAMON_URL') && Validate::isLoadedObject($params['object'])) {
+                $condition = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+                $condition->AddPage();
+                $condition->writeHTML($params['object']->content[$this->context->language->id], true, false, true, false, '');
+                $condition->Output(_PS_MODULE_DIR_.$this->name.'/'.Configuration::get('OKOM_HAMON_MODE'), 'F');
+        }
+    }
+    
+    public function hookCustomerAccount($params)
+    {
+            
+        return $this->display(__FILE__, 'my-account.tpl');
+    }
 
-		}
-	}
-	
-	public function hookCustomerAccount($params)
-	{		
-			
-		return $this->display(__FILE__, 'my-account.tpl');
-		
-	}
+    
+    private function hlp()
+    {
 
-	
-	private function hlp()
-	{
-
-			return '<div class="panel">
+            return '<div class="panel">
 						<div class="panel-heading"><i class="icon-money"></i> ' . $this->l('Infos') . '</div>
 						<div class="table-responsive">
 			<div style="text-align: center;">
@@ -306,32 +304,26 @@ class okom_Hamon extends Module
 			</div>
 			
 			</div></div>';
-
-	}
-	
-	public function checkUpdate()
-	{		
-		if ( function_exists('curl_init') )
-		{		
-			$url = 'http://www.okom3pom.com/dev-modules/'.$this->name.'.version';
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-			curl_setopt($ch, CURLOPT_HEADER, false);
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-			ob_start();  
-			curl_exec($ch);	
-			curl_close($ch);
-			$version = ob_get_contents();  
-			ob_end_clean(); 
-			
-			if( $version != $this->version )
-			return '<h4>'.$this->l('Une nouvelle version du module est disponible sur http://www.okom3pom.com/ ').'</h4> V'.$this->version.' -> V'.$version.'<br/>';
-	
-		} 
-	}		
-
-	
-	
+    }
+    
+    public function checkUpdate()
+    {
+        if (function_exists('curl_init')) {
+            $url = 'http://www.okom3pom.com/dev-modules/'.$this->name.'.version';
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            ob_start();
+            curl_exec($ch);
+            curl_close($ch);
+            $version = ob_get_contents();
+            ob_end_clean();
+            
+            if ($version != $this->version) {
+                return '<h4>'.$this->l('Une nouvelle version du module est disponible sur http://www.okom3pom.com/ ').'</h4> V'.$this->version.' -> V'.$version.'<br/>';
+            }
+        }
+    }
 }
-?>
